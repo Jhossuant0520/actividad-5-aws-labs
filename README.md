@@ -1,336 +1,192 @@
-# AWS Academy — Lab 3.3: Encoding Categorical Variables
+# AWS Academy — Evidencias de laboratorios de Machine Learning
 
-## 1. Información general
+Repositorio académico de los laboratorios desarrollados en Amazon SageMaker. Cada laboratorio cuenta con su notebook, explicación del procedimiento y evidencias disponibles.
+
+## Laboratorios documentados
+
+| Laboratorio | Tema | Archivos principales |
+|---|---|---|
+| **3.3** | Encoding Categorical Variables | [`README.md`](README.md) — documentación del laboratorio 3.3; [`Nootebook_JhossuantCabezas.ipynb`](Nootebook_JhossuantCabezas.ipynb) |
+| **3.4** | Training a Machine Learning Model | [`README_Lab3.4.md`](README_Lab3.4.md); [`NotebookJhossuantLab3.4.ipynb`](NotebookJhossuantLab3.4.ipynb) |
+| **3.5** | Implementación y uso del modelo XGBoost | [`README_Lab3.5.md`](README_Lab3.5.md); [`Notebook_Jhossuant_Lab3.5.ipynb`](Notebook_Jhossuant_Lab3.5.ipynb) |
+
+> **Nota sobre la estructura:** el `README.md` raíz conserva la documentación del laboratorio 3.3 para no perder el contenido ya preparado. La documentación de los laboratorios 3.4 y 3.5 se encuentra en archivos independientes.
+
+## Evidencias
+
+Las capturas y exportaciones completas de los notebooks se guardan en [`pantallazos/`](pantallazos/). Para el laboratorio 3.5 se incluye `Evidencia_General_Laboratorio_3.5.pdf`, una captura multipágina del notebook con el despliegue, la prueba de predicción y los pasos de transformación por lotes.
+
+## Repositorio y rama de trabajo
 
 - **Estudiante:** Jhossuant Cabezas
-- **Correo institucional:** jcabezas45@unisalle.edu.co
-- **Actividad:** Actividad 5
-- **Laboratorio:** 3.3 — Encoding Categorical Variables
-- **Plataforma:** AWS Academy / Amazon SageMaker
-- **Lenguaje:** Python
-- **Biblioteca principal:** Pandas
+- **Rama requerida:** `dev_jcabezas45`
+- **Repositorio:** https://github.com/Jhossuant0520/actividad-5-aws-labs
 
 ---
 
+# AWS Lab 3.3 — Encoding Categorical Variables
+
+## 1. Datos del estudiante
+
+- **Nombre completo:** [Escribe tu nombre completo]
+- **Correo institucional:** [Escribe tu correo institucional]
+- **Asignatura:** [Nombre de la asignatura]
+- **Actividad:** [Número y nombre de la actividad, según indique el profesor]
+- **Laboratorio:** 3.3 — Encoding Categorical Variables
+- **Fecha de realización:** [AAAA-MM-DD]
+- **Repositorio:** [URL del repositorio de GitHub]
+- **Rama de trabajo:** `dev_[prefijo_de_tu_correo]`
+
 ## 2. Objetivo del laboratorio
 
-El objetivo de este laboratorio es aprender a transformar variables categóricas en representaciones numéricas que puedan ser utilizadas por algoritmos de aprendizaje automático (*Machine Learning*).
+Practicar la conversión de variables categóricas a representaciones numéricas para que puedan utilizarse en flujos de trabajo de análisis de datos y *machine learning*. El laboratorio aborda dos estrategias:
 
-Durante el desarrollo se trabajan dos estrategias de codificación:
+1. **Codificación ordinal:** reemplazar categorías que representan una cantidad u orden interpretable por valores numéricos apropiados.
+2. **Codificación no ordinal:** representar categorías sin orden inherente mediante variables indicadoras (*one-hot encoding* o variables ficticias).
 
-- **Codificación ordinal:** convierte categorías que representan cantidades ordenables en sus equivalentes numéricos.
-- **Codificación de variables no ordinales:** representa las categorías mediante variables binarias usando el método `get_dummies()` de Pandas.
+## 3. Conjunto de datos
 
-Para desarrollar el ejercicio se utiliza el conjunto de datos *Automobile* del repositorio de Machine Learning de la Universidad de California en Irvine (UCI).
+Se trabaja con el conjunto de datos **Automobile** del repositorio de aprendizaje automático de la Universidad de California, Irvine (UCI).
 
-## 3. Herramientas y conjunto de datos
+- **Fuente:** [UCI Machine Learning Repository — Automobile](https://archive.ics.uci.edu/dataset/10/automobile)
+- **Descripción general:** características técnicas de automóviles, clasificación de riesgo de seguro y pérdidas normalizadas.
+- **Archivo utilizado en el entorno:** [Escribe el nombre exacto del archivo de datos que utilizaste en AWS].
+- **Preparación:** el archivo de origen no necesariamente contiene encabezados; por eso se asignan nombres a las columnas al leerlo, de acuerdo con las instrucciones del cuaderno del laboratorio.
 
-### 3.1. Herramientas utilizadas
+En el cuaderno de referencia se cargan **205 filas y 25 columnas** antes de seleccionar las variables del ejercicio. Para la práctica se conservan inicialmente estas cuatro columnas:
 
-- AWS Academy y Amazon SageMaker para ejecutar el notebook.
-- Python como lenguaje de programación.
-- Pandas para cargar, explorar y transformar los datos.
-- Jupyter Notebook para ejecutar el código y visualizar los resultados.
-- Git y GitHub para versionar y documentar el trabajo.
+| Variable | Tipo de dato antes de codificar | Tratamiento |
+|---|---|---|
+| `num-of-doors` | Categórica textual | Mapeo a la cantidad de puertas |
+| `num-of-cylinders` | Categórica textual | Mapeo a la cantidad de cilindros |
+| `drive-wheels` | Categórica nominal | Codificación one-hot |
+| `aspiration` | Categórica nominal | Variable indicadora con `drop_first=True` |
 
-### 3.2. Dataset
+## 4. Procedimiento realizado
 
-El archivo utilizado es `imports-85.csv`, correspondiente al conjunto de datos de automóviles.
+> Completa esta sección con base en el cuaderno ejecutado en AWS. Guarda el notebook con sus salidas visibles cuando corresponda y no agregues resultados que no hayas verificado.
 
-El archivo contiene información sobre características de los vehículos, como el tipo de aspiración, número de puertas, tracción y cilindros, además de otras características técnicas.
+### 4.1 Importación y exploración
 
-En la versión utilizada por el cuaderno del laboratorio se obtienen **205 registros y 25 columnas**.
+Se importa `pandas`, se carga el conjunto de datos en un `DataFrame` y se revisa su estructura mediante operaciones como:
 
-**Fuente:** [UCI Machine Learning Repository — Automobile](https://archive.ics.uci.edu/dataset/10/automobile)
+- `df_car.shape`: dimensiones del conjunto de datos.
+- `df_car.head()`: primeras filas para conocer la estructura y los valores.
+- `df_car.info()`: tipos de datos y cantidad de valores no nulos.
+- `df_car.columns`: nombres de las columnas disponibles.
+- `value_counts()`: frecuencia de las categorías seleccionadas.
 
-## 4. Desarrollo paso a paso
+**Observaciones obtenidas en mi ejecución:**
 
-### Paso 1. Importación y exploración de los datos
+[Describe brevemente las dimensiones, los tipos de variables y los valores faltantes que observaste.]
 
-Se importa Pandas y se configuran opciones de visualización para facilitar la inspección de los resultados.
+### 4.2 Codificación ordinal
 
-```python
-import pandas as pd
+Las columnas `num-of-doors` y `num-of-cylinders` expresan cantidades. En el cuaderno se definen diccionarios de correspondencia y se utiliza `replace()` para crear columnas numéricas nuevas.
 
-pd.set_option("display.max_rows", 500)
-pd.set_option("display.max_columns", 500)
-pd.set_option("display.width", 1000)
-```
+Mapeo de puertas empleado:
 
-Como el archivo de datos no contiene encabezados, se define una lista con los nombres de las columnas y posteriormente se carga el archivo en un DataFrame.
-
-```python
-col_names = [
-    "symboling", "normalized-losses", "fuel-type", "aspiration",
-    "num-of-doors", "body-style", "drive-wheels", "engine-location",
-    "wheel-base", "length", "width", "height", "curb-weight",
-    "engine-type", "num-of-cylinders", "engine-size", "fuel-system",
-    "bore", "stroke", "compression-ratio", "horsepower", "peak-rpm",
-    "city-mpg", "highway-mpg", "price"
-]
-
-df_car = pd.read_csv(
-    "imports-85.csv",
-    sep=",",
-    names=col_names,
-    na_values="?",
-    header=None
-)
-```
-
-El parámetro `na_values="?"` permite identificar los signos de interrogación como valores faltantes.
-
-Para comprobar las dimensiones del conjunto de datos se utiliza el atributo `shape`.
-
-```python
-df_car.shape
-```
-
-**Resultado esperado:**
-
-```text
-(205, 25)
-```
-
-A continuación, se visualizan las primeras cinco filas y los tipos de datos mediante `head()` e `info()`.
-
-```python
-df_car.head(5)
-df_car.info()
-```
-
-Esta exploración permite identificar columnas numéricas, variables categóricas y posibles valores faltantes.
-
-### Paso 2. Selección de las variables categóricas
-
-Para concentrarse en los objetivos del laboratorio, se seleccionan cuatro columnas:
-
-```python
-df_car = df_car[
-    ["aspiration", "num-of-doors", "drive-wheels", "num-of-cylinders"]
-].copy()
-
-df_car.head()
-```
-
-Las variables seleccionadas son:
-
-| Variable | Descripción |
-|---|---|
-| `aspiration` | Tipo de aspiración del motor. |
-| `num-of-doors` | Número de puertas del vehículo. |
-| `drive-wheels` | Tipo de tracción del vehículo. |
-| `num-of-cylinders` | Número de cilindros del motor. |
-
-Se seleccionan estas columnas porque permiten comparar la codificación de categorías que representan cantidades con la codificación de categorías que no tienen un orden numérico inherente.
-
-### Paso 3. Codificación de variables ordinales
-
-Una variable ordinal contiene categorías que pueden representarse mediante valores ordenados. En este laboratorio, el número de puertas y el número de cilindros se convierten a valores numéricos equivalentes.
-
-#### 3.1. Codificación del número de puertas
-
-Primero se identifican las categorías y su frecuencia:
-
-```python
-df_car["num-of-doors"].value_counts()
-```
-
-En el conjunto de datos del laboratorio se observan:
-
-- `four`: 114 registros.
-- `two`: 89 registros.
-
-Después se crea un diccionario que relaciona cada categoría con su número correspondiente.
-
-```python
-door_mapper = {
-    "two": 2,
-    "four": 4
-}
-```
-
-Se utiliza `replace()` para crear una columna numérica nueva:
-
-```python
-df_car["doors"] = df_car["num-of-doors"].replace(door_mapper)
-```
-
-La nueva columna `doors` representa el número de puertas mediante los valores 2 y 4. La columna original se conserva para comparar la transformación.
-
-#### 3.2. Codificación del número de cilindros
-
-Se revisan las categorías existentes:
-
-```python
-df_car["num-of-cylinders"].value_counts()
-```
-
-Las frecuencias registradas en el cuaderno son:
-
-| Categoría | Cantidad |
+| Categoría original | Valor numérico |
 |---|---:|
-| `four` | 159 |
-| `six` | 24 |
-| `five` | 11 |
-| `eight` | 5 |
-| `two` | 4 |
-| `twelve` | 1 |
-| `three` | 1 |
+| `two` | 2 |
+| `four` | 4 |
 
-A continuación, se crea el mapeador:
+Mapeo de cilindros empleado:
 
-```python
-cylinder_mapper = {
-    "two": 2,
-    "three": 3,
-    "four": 4,
-    "five": 5,
-    "six": 6,
-    "eight": 8,
-    "twelve": 12
-}
-```
+| Categoría original | Valor numérico |
+|---|---:|
+| `two` | 2 |
+| `three` | 3 |
+| `four` | 4 |
+| `five` | 5 |
+| `six` | 6 |
+| `eight` | 8 |
+| `twelve` | 12 |
 
-Se aplica la transformación:
+Las columnas resultantes en el ejemplo del laboratorio son `doors` y `cylinders`. Se conserva la columna original para poder comparar los valores textuales con su representación numérica.
 
-```python
-df_car["cylinders"] = df_car["num-of-cylinders"].replace(cylinder_mapper)
+**Resultado verificado en mi ejecución:**
 
-df_car.head()
-```
+[Indica qué comprobaste después de aplicar los mapeos y adjunta la evidencia correspondiente.]
 
-La columna `cylinders` contiene la representación numérica del número de cilindros del vehículo.
+### 4.3 Codificación no ordinal
 
-**Resultado de esta etapa:** el DataFrame conserva las variables originales y añade las nuevas columnas numéricas `doors` y `cylinders`.
+Las variables `drive-wheels` y `aspiration` no representan una escala numérica ordenada. Asignarles números arbitrarios podría sugerir relaciones que no existen entre sus categorías.
 
-### Paso 4. Codificación de variables no ordinales
+- Para `drive-wheels`, se utiliza `pd.get_dummies()` para crear una columna indicadora por categoría: `drive-wheels_4wd`, `drive-wheels_fwd` y `drive-wheels_rwd`.
+- Para `aspiration`, se utiliza `pd.get_dummies(..., drop_first=True)`. En el ejemplo del laboratorio se conserva la columna `aspiration_turbo`; la categoría estándar (`std`) queda representada como la categoría de referencia.
+- Según la versión y los parámetros de pandas, las columnas indicadoras pueden mostrarse como `True`/`False` en vez de `1`/`0`. Ambos formatos expresan indicadores binarios.
 
-Las variables nominales contienen categorías que no representan un orden numérico. En este caso se trabajan `drive-wheels` y `aspiration`.
+**Resultado verificado en mi ejecución:**
 
-Asignar números consecutivos a las categorías podría introducir una relación de orden que no existe en los datos. Por este motivo se utiliza la codificación *one-hot* mediante `pd.get_dummies()`.
+[Describe las nuevas columnas que aparecen y comprueba una o más filas del resultado.]
 
-#### 4.1. Codificación del tipo de tracción
+### 4.4 Tarea de desafío (si fue solicitada)
 
-Se consultan las frecuencias:
+La guía propone regresar al conjunto de datos e incorporar otras variables. Esta parte debe marcarse como realizada solo si la desarrollaste.
 
-```python
-df_car["drive-wheels"].value_counts()
-```
+- **Variables adicionales seleccionadas:** [Escribe las variables].
+- **Estrategia aplicada a cada una:** [Explica el mapeo ordinal o la codificación one-hot y por qué corresponde].
+- **Resultado:** [Describe lo que comprobaste].
 
-Resultados registrados en el cuaderno:
+## 5. Evidencias de ejecución
 
-- `fwd`: 120 registros.
-- `rwd`: 76 registros.
-- `4wd`: 9 registros.
+Crea la carpeta `pantallazos/` en el repositorio y agrega capturas tomadas en el entorno AWS. Las capturas deben mostrar la pantalla completa, como lo solicita la rúbrica. Evita recortar la imagen de modo que se pierdan el contexto del notebook o las salidas relevantes.
 
-Se utiliza `get_dummies()` para generar una columna binaria por categoría:
+Nombres sugeridos para los archivos; utiliza solo los que realmente hayas capturado:
 
-```python
-df_car = pd.get_dummies(
-    df_car,
-    columns=["drive-wheels"]
-)
+| Archivo sugerido | Qué debe mostrar |
+|---|---|
+| `pantallazos/01_exploracion_dataset.png` | Notebook en AWS con carga del conjunto de datos y exploración (`shape`, `head` o `info`). |
+| `pantallazos/02_frecuencias_categorias.png` | Frecuencias de puertas, cilindros, tipo de tracción o aspiración. |
+| `pantallazos/03_codificacion_ordinal.png` | Código ejecutado y columnas `doors` y `cylinders`. |
+| `pantallazos/04_codificacion_one_hot.png` | Código y resultado de la codificación de `drive-wheels` y `aspiration`. |
+| `pantallazos/05_rama_y_commits.png` | Terminal de AWS mostrando la rama de trabajo y el historial de commits. |
 
-df_car.head()
-```
+### Evidencias incorporadas
 
-Se generan las siguientes columnas:
+- [ ] Nombre completo visible en una celda Markdown del notebook.
+- [ ] Exploración inicial del conjunto de datos.
+- [ ] Codificación ordinal y resultado.
+- [ ] Codificación one-hot y resultado.
+- [ ] Rama de trabajo e historial de commits.
 
-- `drive-wheels_4wd`
-- `drive-wheels_fwd`
-- `drive-wheels_rwd`
+## 6. Resultados y análisis
 
-Cada columna indica si el vehículo pertenece a la categoría correspondiente. En cada fila, la columna asociada con la categoría presente toma el valor verdadero y las demás toman el valor falso, según el tipo de datos generado por Pandas.
+[Redacta aquí tus resultados después de ejecutar el notebook. Puedes explicar cómo cambió la estructura del `DataFrame`, qué columnas se añadieron, cómo se representó cada categoría y si encontraste valores faltantes en las columnas originales. No incluyas afirmaciones que no hayas comprobado.]
 
-Esta representación permite codificar la tracción sin asignar un orden artificial a las categorías.
+## 7. Conclusiones personales
 
-#### 4.2. Codificación del tipo de aspiración
+[Escribe entre uno y tres párrafos con tus propias palabras. Explica la diferencia entre codificar categorías que representan cantidades y codificar categorías nominales; menciona qué aprendiste de `replace()` y `get_dummies()` y en qué parte tuviste dificultades, si las hubo.]
 
-Se comprueban las frecuencias de la variable:
+## 8. Entorno utilizado
 
-```python
-df_car["aspiration"].value_counts()
-```
+Completa esta información con el entorno real de AWS:
 
-En el conjunto de datos se observan:
+- **Servicio / entorno:** AWS Academy / [nombre exacto del recurso o entorno]
+- **Notebook:** [nombre exacto del archivo `.ipynb`]
+- **Python:** [versión, si la verificaste]
+- **pandas:** [versión, si la verificaste]
 
-- `std`: 168 registros.
-- `turbo`: 37 registros.
+## 9. Control de versiones
 
-Como existen únicamente dos categorías, se utiliza `drop_first=True` para conservar una sola columna indicadora:
+La rúbrica compartida solicita una rama de trabajo con el patrón `dev_` seguido del identificador derivado del correo institucional, y un mínimo de tres commits por laboratorio realizados desde el recurso aprovisionado en AWS. Confirma con las instrucciones del profesor el nombre exacto del repositorio y de la rama.
 
-```python
-df_car = pd.get_dummies(
-    df_car,
-    columns=["aspiration"],
-    drop_first=True
-)
+Los mensajes de commit deben describir cambios reales. Ejemplos de mensajes posibles, solo cuando correspondan a los cambios hechos:
 
-df_car.head()
-```
+1. `docs: agrega identificación y documentación inicial del laboratorio`
+2. `docs: incorpora evidencias de exploración y codificación ordinal`
+3. `docs: documenta codificación one-hot y conclusiones`
 
-Se genera la columna `aspiration_turbo`. Un valor verdadero indica que el vehículo utiliza turbo; un valor falso representa la categoría de referencia, `std`.
+No crees commits vacíos ni registres capturas o resultados que no hayas generado. Consulta el historial con `git log --oneline` y verifica la rama con `git branch --show-current`.
 
-## 5. Resultados obtenidos
+## 10. Referencias
 
-Al terminar los pasos del laboratorio se han aplicado dos estrategias de codificación:
+- Dua, D. y Graff, C. (2019). *UCI Machine Learning Repository*. University of California, Irvine, School of Information and Computer Science. [https://archive.ics.uci.edu/](https://archive.ics.uci.edu/)
+- UCI Machine Learning Repository. (s. f.). *Automobile*. [https://archive.ics.uci.edu/dataset/10/automobile](https://archive.ics.uci.edu/dataset/10/automobile)
+- pandas. (s. f.). *pandas.DataFrame.replace*. [https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html)
+- pandas. (s. f.). *pandas.get_dummies*. [https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html](https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html)
 
-1. La transformación mediante diccionarios y `replace()` para convertir el número de puertas y cilindros a valores numéricos.
-2. La transformación mediante `get_dummies()` para representar las categorías de tracción y aspiración con variables indicadoras.
+---
 
-Las variables resultantes se pueden inspeccionar mediante:
-
-```python
-df_car.head()
-df_car.info()
-```
-
-La transformación genera las siguientes columnas relevantes:
-
-- `doors`
-- `cylinders`
-- `drive-wheels_4wd`
-- `drive-wheels_fwd`
-- `drive-wheels_rwd`
-- `aspiration_turbo`
-
-Las columnas originales `num-of-doors` y `num-of-cylinders` se conservan en el DataFrame mostrado por el laboratorio.
-
-Los valores finales deben verificarse mediante la ejecución del notebook en el entorno de AWS.
-
-## 6. Evidencias del laboratorio
-
-En la carpeta `pantallazos/` del repositorio se almacenan las capturas de pantalla tomadas durante la ejecución del laboratorio en AWS SageMaker.
-
-Las imágenes deben permitir observar la pantalla completa y mostrar el código ejecutado junto con sus resultados.
-
-Se recomienda incluir evidencias de:
-
-1. Carga y exploración inicial del dataset.
-2. Selección de las cuatro variables categóricas.
-3. Codificación ordinal del número de puertas.
-4. Codificación ordinal del número de cilindros.
-5. Codificación *one-hot* de `drive-wheels`.
-6. Codificación de `aspiration` usando `drop_first=True`.
-7. Inspección del DataFrame final.
-
-> Verifica que los nombres de los archivos de evidencia coincidan con las capturas realmente incluidas en la carpeta `pantallazos/`.
-
-## 7. Conclusiones
-
-El laboratorio permitió comprender la importancia de convertir las variables categóricas en representaciones que puedan ser procesadas por algoritmos de aprendizaje automático.
-
-La codificación mediante diccionarios resulta adecuada para representar cantidades como el número de puertas y de cilindros mediante sus valores numéricos correspondientes.
-
-Por su parte, la codificación *one-hot* permite representar categorías nominales sin introducir un orden numérico artificial.
-
-También se practicó la exploración de datos con Pandas, la revisión de frecuencias mediante `value_counts()`, la sustitución de categorías con `replace()` y la creación de variables indicadoras con `get_dummies()`.
-
-Estos procedimientos constituyen una etapa importante del preprocesamiento de datos para futuros proyectos de *Machine Learning*.
-
-## 8. Referencias
-
-- Dua, D., & Graff, C. (2019). *UCI Machine Learning Repository*. University of California, Irvine, School of Information and Computer Sciences. https://archive.ics.uci.edu/dataset/10/automobile
-- pandas. (s. f.). *pandas.DataFrame.replace*. https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.replace.html
-- pandas. (s. f.). *pandas.get_dummies*. https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html
+**Nota:** esta documentación corresponde al material del **Lab 3.3** compartido en el cuaderno. La rúbrica que se mostró menciona los laboratorios **3.4 y 3.5**; confirma si las mismas exigencias de repositorio, rama, commits y pantallazos también aplican al Lab 3.3.
